@@ -10,7 +10,7 @@ class SettlementController {
       }
 
       const { id: groupId } = req.params;
-      const settlement = await settlementService.createSettlement(groupId, req.body);
+      const settlement = await settlementService.createSettlement(String(groupId), req.body);
 
       res.status(201).json(settlement);
     } catch (error) {
@@ -26,7 +26,7 @@ class SettlementController {
         limit: string;
       };
 
-      const result = await settlementService.listSettlements(groupId, {
+      const result = await settlementService.listSettlements(String(groupId), {
         page: Number(page) || 1,
         limit: Number(limit) || 20,
       });
@@ -40,7 +40,7 @@ class SettlementController {
   async getBalances(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id: groupId } = req.params;
-      const summary = await settlementService.getGroupBalances(groupId);
+      const summary = await settlementService.getGroupBalances(String(groupId));
 
       res.json(summary);
     } catch (error) {

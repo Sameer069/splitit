@@ -36,6 +36,7 @@ class ExpenseService {
       throw new ValidationError('All split users must be members of the group');
     }
 
+    // Create expense
     const expense = await expenseRepository.createExpense({
       groupId,
       ...data,
@@ -52,7 +53,13 @@ class ExpenseService {
       'Expense created'
     );
 
-    const response = this.formatExpenseResponse(expense);
+    // Fetch with all relations for real-time event
+    const expenseWithRelations = await expenseRepository.findById(expense.id);
+    if (!expenseWithRelations) {
+      throw new NotFoundError('Expense not found after creation');
+    }
+
+    const response = this.formatExpenseResponse(expenseWithRelations);
 
     // Emit real-time event
     SocketEvents.expenseCreated(groupId, response);
@@ -195,7 +202,8 @@ class ExpenseService {
       changes.paidById = { from: existing.paidById, to: data.paidById };
     }
 
-    const expense = await expenseRepository.updateExpense(expenseId, userId, data, changes);
+    // Update expense
+    const updatedExpense = await expenseRepository.updateExpense(expenseId, userId, data, changes);
 
     logger.info(
       {
@@ -206,10 +214,16 @@ class ExpenseService {
       'Expense updated'
     );
 
-    const response = this.formatExpenseResponse(expense);
+    // Fetch with all relations
+    const expenseWithRelations = await expenseRepository.findById(updatedExpense.id);
+    if (!expenseWithRelations) {
+      throw new NotFoundError('Expense not found after update');
+    }
+
+    const response = this.formatExpenseResponse(expenseWithRelations);
 
     // Emit real-time event
-    SocketEvents.expenseUpdated(expense.groupId, response);
+    SocketEvents.expenseUpdated(expenseWithRelations.groupId, response);
 
     return response;
   }

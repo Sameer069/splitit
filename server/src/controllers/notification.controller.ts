@@ -52,7 +52,7 @@ class NotificationController {
       }
 
       const { id } = req.params;
-      await notificationService.markAsRead(id, req.user.id);
+      await notificationService.markAsRead(String(id), req.user.id);
 
       res.json({ message: 'Notification marked as read' });
     } catch (error) {
@@ -97,7 +97,7 @@ class NotificationController {
   async unregisterPushToken(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { token } = req.params;
-      await pushService.unregisterPushToken(token);
+      await pushService.unregisterPushToken(String(token));
 
       res.json({ message: 'Push token unregistered successfully' });
     } catch (error) {

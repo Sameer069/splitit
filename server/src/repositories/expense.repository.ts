@@ -1,4 +1,4 @@
-import { Expense, ExpenseSplit, ExpenseComment, AuditAction, Prisma } from '@prisma/client';
+import { Expense, AuditAction, Prisma } from '@prisma/client';
 import { prisma } from '../utils/prisma';
 
 export class ExpenseRepository {
@@ -29,7 +29,7 @@ export class ExpenseRepository {
           create: {
             userId: data.createdById,
             action: AuditAction.CREATED,
-            changes: null,
+            changes: Prisma.JsonNull,
           },
         },
       },
@@ -159,7 +159,7 @@ export class ExpenseRepository {
         create: {
           userId,
           action: AuditAction.UPDATED,
-          changes,
+          changes: changes as Prisma.InputJsonValue,
         },
       },
     };
@@ -195,7 +195,7 @@ export class ExpenseRepository {
         expenseId: id,
         userId,
         action: AuditAction.DELETED,
-        changes: null,
+        changes: Prisma.JsonNull,
       },
     });
 

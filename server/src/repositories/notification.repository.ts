@@ -18,7 +18,7 @@ export class NotificationRepository {
         type: data.type,
         title: data.title,
         body: data.body,
-        data: data.data || null,
+        data: data.data ? (data.data as Prisma.InputJsonValue) : Prisma.JsonNull,
       },
     });
   }
@@ -43,7 +43,7 @@ export class NotificationRepository {
             type: data.type,
             title: data.title,
             body: data.body,
-            data: data.data || null,
+            data: data.data ? (data.data as Prisma.InputJsonValue) : Prisma.JsonNull,
           },
         })
       )

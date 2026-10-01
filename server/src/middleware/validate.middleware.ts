@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodSchema } from 'zod';
 import { ValidationError } from '../utils/errors';
 
 /**
@@ -7,7 +7,7 @@ import { ValidationError } from '../utils/errors';
  * Validates req.body, req.params, or req.query against a Zod schema
  */
 export const validateBody = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       const parsed = schema.safeParse(req.body);
       
@@ -25,7 +25,7 @@ export const validateBody = (schema: ZodSchema) => {
 };
 
 export const validateParams = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       const parsed = schema.safeParse(req.params);
       
@@ -42,7 +42,7 @@ export const validateParams = (schema: ZodSchema) => {
 };
 
 export const validateQuery = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       const parsed = schema.safeParse(req.query);
       

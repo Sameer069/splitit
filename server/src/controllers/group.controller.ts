@@ -21,7 +21,7 @@ class GroupController {
   async getOne(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const group = await groupService.getGroupDetail(id);
+      const group = await groupService.getGroupDetail(String(id));
 
       res.json(group);
     } catch (error) {
@@ -34,7 +34,7 @@ class GroupController {
       const { id } = req.params;
       const { name } = req.body;
       
-      const group = await groupService.updateGroup(id, name);
+      const group = await groupService.updateGroup(String(id), name);
 
       res.json(group);
     } catch (error) {
@@ -47,7 +47,7 @@ class GroupController {
       const { id } = req.params;
       const force = req.query.force === 'true';
 
-      await groupService.deleteGroup(id, force);
+      await groupService.deleteGroup(String(id), force);
 
       res.json({ message: 'Group deleted successfully' });
     } catch (error) {
@@ -64,7 +64,7 @@ class GroupController {
       const { id } = req.params;
       const { email } = req.body;
 
-      const member = await groupService.addMember(id, email, req.user.id);
+      const member = await groupService.addMember(String(id), email, req.user.id);
 
       res.status(201).json(member);
     } catch (error) {
@@ -80,7 +80,7 @@ class GroupController {
 
       const { id, userId } = req.params;
 
-      await groupService.removeMember(id, userId, req.user.id);
+      await groupService.removeMember(String(id), String(userId), req.user.id);
 
       res.json({ message: 'Member removed successfully' });
     } catch (error) {
@@ -103,7 +103,7 @@ class GroupController {
         );
       }
 
-      await groupService.removeMember(id, req.user.id, req.user.id);
+      await groupService.removeMember(String(id), req.user.id, req.user.id);
 
       res.json({ message: 'Left group successfully' });
     } catch (error) {
@@ -120,7 +120,7 @@ class GroupController {
       const { id } = req.params;
       const { newOwnerId } = req.body;
 
-      await groupService.transferOwnership(id, req.user.id, newOwnerId);
+      await groupService.transferOwnership(String(id), req.user.id, newOwnerId);
 
       res.json({ message: 'Ownership transferred successfully' });
     } catch (error) {

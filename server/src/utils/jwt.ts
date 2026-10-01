@@ -18,14 +18,14 @@ export interface TokenPair {
 export const generateAccessToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, env.JWT_SECRET, {
     expiresIn: env.JWT_EXPIRES_IN,
-  });
+  } as jwt.SignOptions);
 };
 
 // Generate refresh token (long-lived)
 export const generateRefreshToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
     expiresIn: env.JWT_REFRESH_EXPIRES_IN,
-  });
+  } as jwt.SignOptions);
 };
 
 // Generate both tokens at once

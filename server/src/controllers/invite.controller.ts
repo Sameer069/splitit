@@ -12,7 +12,7 @@ class InviteController {
       const { id: groupId } = req.params;
       const { email } = req.body;
 
-      const invite = await inviteService.createInvite(groupId, email, req.user.id);
+      const invite = await inviteService.createInvite(String(groupId), email, req.user.id);
 
       res.status(201).json(invite);
     } catch (error) {
@@ -23,7 +23,7 @@ class InviteController {
   async getDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { token } = req.params;
-      const invite = await inviteService.getInviteDetails(token);
+      const invite = await inviteService.getInviteDetails(String(token));
 
       res.json(invite);
     } catch (error) {
@@ -38,7 +38,7 @@ class InviteController {
       }
 
       const { token } = req.params;
-      const result = await inviteService.acceptInvite(token, req.user.id);
+      const result = await inviteService.acceptInvite(String(token), req.user.id);
 
       res.json({
         message: 'Invite accepted successfully',
@@ -66,7 +66,7 @@ class InviteController {
   async listGroupInvites(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id: groupId } = req.params;
-      const invites = await inviteService.getGroupInvites(groupId);
+      const invites = await inviteService.getGroupInvites(String(groupId));
 
       res.json(invites);
     } catch (error) {

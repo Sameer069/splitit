@@ -12,8 +12,7 @@ export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   // Log error
   logger.error({
@@ -44,7 +43,7 @@ export const errorHandler = (
 
   // Prisma errors
   if (err.constructor.name === 'PrismaClientKnownRequestError') {
-    const prismaError = err as { code: string; meta?: Record<string, unknown> };
+    const prismaError = err as unknown as { code: string; meta?: Record<string, unknown> };
     
     // Unique constraint violation
     if (prismaError.code === 'P2002') {

@@ -5,7 +5,7 @@ import { logger } from '../utils/logger';
 import { getSocketService } from '../socket';
 
 interface OneSignalNotification {
-  app_id: string;
+  app_id: string | undefined;
   include_player_ids: string[];
   headings: { en: string };
   contents: { en: string };
@@ -13,8 +13,8 @@ interface OneSignalNotification {
 }
 
 class PushService {
-  private appId: string;
-  private restApiKey: string;
+  private readonly appId: string | undefined;
+  private readonly restApiKey: string | undefined;
 
   constructor() {
     this.appId = env.ONESIGNAL_APP_ID;
@@ -86,13 +86,13 @@ class PushService {
         throw new Error(`OneSignal API error: ${response.status} - ${errorText}`);
       }
 
-      const result = await response.json();
+      const result: unknown = await response.json();
 
       logger.info(
         {
           recipients: tokens.length,
           disconnectedUsers: disconnectedUserIds.length,
-          oneSignalId: result.id,
+          oneSignalId: (result as any).id,
         },
         'Push notification sent via OneSignal'
       );

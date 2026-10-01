@@ -10,7 +10,7 @@ import { Role } from '@prisma/client';
  */
 export const requireGroupMembership = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -18,7 +18,7 @@ export const requireGroupMembership = async (
       throw new UnauthorizedError('Authentication required');
     }
 
-    const groupId = req.params.id || req.params.groupId;
+    const groupId = String(req.params.id || req.params.groupId);
     
     if (!groupId) {
       throw new NotFoundError('Group ID not provided in request');
@@ -59,7 +59,7 @@ export const requireGroupMembership = async (
  */
 export const requireGroupOwner = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void => {
   try {
@@ -83,7 +83,7 @@ export const requireGroupOwner = (
  */
 export const requireExpenseModifyPermission = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -95,7 +95,7 @@ export const requireExpenseModifyPermission = async (
       throw new ForbiddenError('Group membership not verified');
     }
 
-    const expenseId = req.params.expenseId;
+    const expenseId = String(req.params.expenseId || '');
     
     if (!expenseId) {
       throw new NotFoundError('Expense ID not provided in request');
@@ -141,7 +141,7 @@ export const requireExpenseModifyPermission = async (
  */
 export const requireCommentDeletePermission = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -153,7 +153,7 @@ export const requireCommentDeletePermission = async (
       throw new ForbiddenError('Group membership not verified');
     }
 
-    const commentId = req.params.commentId;
+    const commentId = String(req.params.commentId || '');
     
     if (!commentId) {
       throw new NotFoundError('Comment ID not provided in request');
@@ -162,9 +162,7 @@ export const requireCommentDeletePermission = async (
     // Fetch the comment
     const comment = await prisma.expenseComment.findUnique({
       where: { id: commentId },
-      select: {
-        id: true,
-        userId: true,
+      include: {
         expense: {
           select: {
             groupId: true,
@@ -204,7 +202,7 @@ export const requireCommentDeletePermission = async (
  */
 export const requireSettlementParticipant = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void => {
   try {

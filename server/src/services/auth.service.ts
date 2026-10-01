@@ -162,7 +162,7 @@ class AuthService {
           email,
           googleId,
           authProvider: AuthProvider.GOOGLE,
-          avatarUrl: picture || null,
+          avatarUrl: picture || undefined,
         });
 
         // Send welcome email (non-blocking)

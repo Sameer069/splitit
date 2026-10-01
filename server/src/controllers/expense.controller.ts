@@ -10,7 +10,7 @@ class ExpenseController {
       }
 
       const { id: groupId } = req.params;
-      const expense = await expenseService.createExpense(groupId, req.user.id, req.body);
+      const expense = await expenseService.createExpense(String(groupId), req.user.id, req.body);
 
       res.status(201).json(expense);
     } catch (error) {
@@ -27,7 +27,7 @@ class ExpenseController {
         categoryId?: string;
       };
 
-      const result = await expenseService.listExpenses(groupId, {
+      const result = await expenseService.listExpenses(String(groupId), {
         page: Number(page) || 1,
         limit: Number(limit) || 20,
         categoryId,
@@ -42,7 +42,7 @@ class ExpenseController {
   async getOne(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { expenseId } = req.params;
-      const expense = await expenseService.getExpenseDetail(expenseId);
+      const expense = await expenseService.getExpenseDetail(String(expenseId));
 
       res.json(expense);
     } catch (error) {
@@ -57,7 +57,7 @@ class ExpenseController {
       }
 
       const { expenseId } = req.params;
-      const expense = await expenseService.updateExpense(expenseId, req.user.id, req.body);
+      const expense = await expenseService.updateExpense(String(expenseId), req.user.id, req.body);
 
       res.json(expense);
     } catch (error) {
@@ -72,7 +72,7 @@ class ExpenseController {
       }
 
       const { expenseId } = req.params;
-      await expenseService.deleteExpense(expenseId, req.user.id);
+      await expenseService.deleteExpense(String(expenseId), req.user.id);
 
       res.json({ message: 'Expense deleted successfully' });
     } catch (error) {
@@ -89,7 +89,7 @@ class ExpenseController {
       const { expenseId } = req.params;
       const { body } = req.body;
 
-      const comment = await expenseService.addComment(expenseId, req.user.id, body);
+      const comment = await expenseService.addComment(String(expenseId), req.user.id, body);
 
       res.status(201).json(comment);
     } catch (error) {
@@ -100,7 +100,7 @@ class ExpenseController {
   async deleteComment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id: groupId, expenseId, commentId } = req.params;
-      await expenseService.deleteComment(commentId, expenseId, groupId);
+      await expenseService.deleteComment(String(commentId), String(expenseId), String(groupId));
 
       res.json({ message: 'Comment deleted successfully' });
     } catch (error) {
@@ -111,7 +111,7 @@ class ExpenseController {
   async getHistory(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { expenseId } = req.params;
-      const history = await expenseService.getExpenseHistory(expenseId);
+      const history = await expenseService.getExpenseHistory(String(expenseId));
 
       res.json(history);
     } catch (error) {
