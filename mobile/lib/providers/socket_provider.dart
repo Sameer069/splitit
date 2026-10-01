@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../config/app_config.dart';
 import '../models/socket_state.dart';
+import '../models/auth_state.dart';
 import 'auth_provider.dart';
 
 /// Socket.io provider with JWT authentication and real-time event handling
