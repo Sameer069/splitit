@@ -19,7 +19,7 @@ dependencies:
 
   # API & Networking
   dio: ^5.9.0
-  retrofit: ^4.9.0
+  retrofit: ^4.4.1
   json_annotation: ^4.9.0
   
   # Real-time
@@ -55,10 +55,10 @@ dev_dependencies:
     sdk: flutter
   
   # Code Generation
-  build_runner: ^2.10.0
-  riverpod_generator: ^2.6.3
-  retrofit_generator: ^10.1.0
-  json_serializable: ^6.11.0
+  build_runner: ^2.4.0
+  riverpod_generator: ^3.0.0
+  retrofit_generator: ^9.1.2
+  json_serializable: ^6.8.0
   freezed: ^2.5.7
 
   # Linting
