@@ -1,0 +1,258 @@
+// Prisma schema for Splitwise-style expense splitting app
+// PostgreSQL database with comprehensive relationships
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(uuid())
+  name          String
+  email         String       @unique
+  passwordHash  String?      // null for Google-only accounts
+  googleId      String?      @unique  // Google's "sub" claim
+  authProvider  AuthProvider @default(EMAIL)
+  avatarUrl     String?
+  createdAt     DateTime     @default(now())
+  
+  // Relations
+  memberships   GroupMember[]
+  paidExpenses  Expense[]      @relation("PaidBy")
+  splits        ExpenseSplit[]
+  invitesSent   Invite[]       @relation("InviteSender")
+  notifications Notification[]
+  pushTokens    PushToken[]
+  refreshTokens RefreshToken[]
+  comments      ExpenseComment[]
+  
+  @@index([email])
+  @@index([googleId])
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique  // hashed, never store raw token
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  
+  @@index([tokenHash])
+  @@index([userId])
+}
+
+model Group {
+  id          String        @id @default(uuid())
+  name        String
+  createdById String
+  createdAt   DateTime      @default(now())
+  
+  // Relations
+  members     GroupMember[]
+  expenses    Expense[]
+  invites     Invite[]
+  settlements Settlement[]
+  
+  @@index([createdById])
+}
+
+model GroupMember {
+  id       String   @id @default(uuid())
+  groupId  String
+  userId   String
+  role     Role     @default(MEMBER)
+  joinedAt DateTime @default(now())
+  
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@index([groupId])
+}
+
+enum Role {
+  OWNER
+  MEMBER
+}
+
+model Invite {
+  id          String       @id @default(uuid())
+  groupId     String
+  email       String
+  token       String       @unique
+  status      InviteStatus @default(PENDING)
+  invitedById String
+  createdAt   DateTime     @default(now())
+  expiresAt   DateTime
+  
+  group     Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  invitedBy User  @relation("InviteSender", fields: [invitedById], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([groupId])
+  @@index([email])
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  groupId   String?
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?            // for deep-linking
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  EXPENSE_ADDED
+  EXPENSE_UPDATED
+  EXPENSE_DELETED
+  INVITE_RECEIVED
+  INVITE_ACCEPTED
+  MEMBER_JOINED
+  SETTLED_UP
+}
+
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique  // OneSignal subscription ID
+  deviceId  String?
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  groupId     String
+  paidById    String
+  amount      Decimal  @db.Decimal(10, 2)
+  description String
+  categoryId  String?
+  receiptUrl  String?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  group     Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidBy    User             @relation("PaidBy", fields: [paidById], references: [id])
+  category  ExpenseCategory? @relation(fields: [categoryId], references: [id])
+  splits    ExpenseSplit[]
+  comments  ExpenseComment[]
+  auditLogs ExpenseAuditLog[]
+  
+  @@index([groupId])
+  @@index([paidById])
+  @@index([createdAt])
+  @@index([categoryId])
+}
+
+model ExpenseCategory {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  icon     String
+  expenses Expense[]
+}
+
+model ExpenseComment {
+  id        String   @id @default(uuid())
+  expenseId String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+  
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([expenseId])
+  @@index([userId])
+}
+
+model ExpenseAuditLog {
+  id        String      @id @default(uuid())
+  expenseId String
+  userId    String
+  action    AuditAction
+  changes   Json?       // { field: { from, to } }
+  createdAt DateTime    @default(now())
+  
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  
+  @@index([expenseId])
+}
+
+enum AuditAction {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+model ExpenseSplit {
+  id          String  @id @default(uuid())
+  expenseId   String
+  userId      String
+  shareAmount Decimal @db.Decimal(10, 2)
+  
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([expenseId, userId])
+  @@index([userId])
+}
+
+model Settlement {
+  id         String   @id @default(uuid())
+  groupId    String
+  fromUserId String   // person who paid
+  toUserId   String   // person who received
+  amount     Decimal  @db.Decimal(10, 2)
+  note       String?
+  settledAt  DateTime @default(now())
+  
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  @@index([groupId])
+  @@index([settledAt])
+}

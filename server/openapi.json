@@ -1,0 +1,56 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SplitIt API",
+    "version": "1.0.0",
+    "description": "Splitwise-style expense splitting app with real-time updates.\n\n## Authentication\nAll protected endpoints require JWT Bearer token: Authorization: Bearer <token>\n\n## Real-time Updates\nSocket.io is used for live synchronization of expenses, balances, members, and notifications.\n"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User registration and login"
+    },
+    {
+      "name": "User",
+      "description": "Profile management"
+    },
+    {
+      "name": "Groups",
+      "description": "Group and membership management"
+    },
+    {
+      "name": "Expenses",
+      "description": "Expense tracking and splitting"
+    },
+    {
+      "name": "Settlements",
+      "description": "Payment settlements and balances"
+    },
+    {
+      "name": "Invites",
+      "description": "Group invitations"
+    },
+    {
+      "name": "Notifications",
+      "description": "In-app and push notifications"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {},
+    "parameters": {}
+  },
+  "paths": {}
+}
