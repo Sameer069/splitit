@@ -38,6 +38,10 @@ Socket.io is used for live synchronization of expenses, balances, members, and n
   },
   servers: [
     {
+      url: 'https://splitit-backend-w856.onrender.com',
+      description: 'Production server',
+    },
+    {
       url: 'http://localhost:3000',
       description: 'Development server',
     },

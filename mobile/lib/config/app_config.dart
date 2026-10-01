@@ -3,12 +3,12 @@ class AppConfig {
   // API Configuration
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://your-app.up.railway.app', // UPDATE THIS after deploying backend
+    defaultValue: 'https://splitit-backend-w856.onrender.com',
   );
 
   static const String socketUrl = String.fromEnvironment(
     'SOCKET_URL',
-    defaultValue: 'https://your-app.up.railway.app', // UPDATE THIS after deploying backend
+    defaultValue: 'https://splitit-backend-w856.onrender.com',
   );
 
   // OneSignal Configuration
