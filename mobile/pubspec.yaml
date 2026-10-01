@@ -36,15 +36,15 @@ dependencies:
   onesignal_flutter: ^5.2.7
 
   # Forms
-  flutter_form_builder: ^10.0.0
-  form_builder_validators: ^11.0.0
+  flutter_form_builder: ^9.4.1
+  form_builder_validators: ^10.0.1
 
   # Image Handling
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
 
   # UI Utilities
-  intl: ^0.20.3
+  intl: ^0.19.0
   timeago: ^3.7.0
   
   # Freezed (immutable models)
