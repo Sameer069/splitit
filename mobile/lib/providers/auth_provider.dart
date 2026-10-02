@@ -108,6 +108,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
+      print('[AUTH] Attempting login for: $email');
+      print('[AUTH] API URL: ${AppConfig.apiBaseUrl}/api/auth/login');
+      
       final response = await _dio.post(
         '${AppConfig.apiBaseUrl}/api/auth/login',
         data: {
@@ -116,12 +119,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
         },
       );
 
+      print('[AUTH] Login response received: ${response.statusCode}');
+      print('[AUTH] Response data: ${response.data}');
+
       final loginResponse = LoginResponse.fromJson(response.data);
+      print('[AUTH] Parsed login response successfully');
 
       // Save tokens
       await _storage.saveAccessToken(loginResponse.accessToken);
       await _storage.saveRefreshToken(loginResponse.refreshToken);
       await _storage.saveUserId(loginResponse.user.id);
+      print('[AUTH] Tokens saved successfully');
 
       state = state.copyWith(
         accessToken: loginResponse.accessToken,
@@ -133,10 +141,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isAuthenticated: true,
         isLoading: false,
       );
-    } catch (e) {
+      print('[AUTH] Auth state updated - isAuthenticated: ${state.isAuthenticated}');
+    } catch (e, stackTrace) {
+      print('[AUTH] Login error: $e');
+      print('[AUTH] Stack trace: $stackTrace');
+      
       String errorMessage = 'Login failed';
       if (e is DioException) {
-        errorMessage = e.response?.data['message'] ?? errorMessage;
+        print('[AUTH] Dio error - status: ${e.response?.statusCode}');
+        print('[AUTH] Dio error - data: ${e.response?.data}');
+        errorMessage = e.response?.data['message']?.toString() ?? e.message ?? errorMessage;
       }
 
       state = state.copyWith(

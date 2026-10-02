@@ -30,22 +30,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
       final isSplashRoute = state.matchedLocation == '/splash';
 
+      print('[ROUTER] Redirect check:');
+      print('[ROUTER]   - Current location: ${state.matchedLocation}');
+      print('[ROUTER]   - isAuthenticated: $isAuthenticated');
+      print('[ROUTER]   - isLoading: $isLoading');
+      print('[ROUTER]   - isAuthRoute: $isAuthRoute');
+      print('[ROUTER]   - isSplashRoute: $isSplashRoute');
+
       // Still loading auth state - stay on splash
       if (isLoading && isSplashRoute) {
+        print('[ROUTER] Decision: Stay on splash (loading)');
         return null;
       }
 
       // Loading complete but not authenticated - go to login
       if (!isLoading && !isAuthenticated && !isAuthRoute) {
+        print('[ROUTER] Decision: Redirect to /auth/login');
         return '/auth/login';
       }
 
       // Authenticated and trying to access auth routes - go to home
       if (!isLoading && isAuthenticated && isAuthRoute) {
+        print('[ROUTER] Decision: Redirect to / (home)');
         return '/';
       }
 
       // All good - no redirect
+      print('[ROUTER] Decision: No redirect needed');
       return null;
     },
 
