@@ -6,6 +6,7 @@ import '../../models/expense_models.dart';
 import '../../models/socket_state.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expenses_provider.dart';
+import '../../providers/socket_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/socket_event_handler.dart';
 
@@ -13,7 +14,7 @@ import '../../utils/socket_event_handler.dart';
 class ExpensesListScreen extends ConsumerStatefulWidget {
   final String groupId;
 
-  const ExpensesListScreen({super.key, required this.groupId});
+  const ExpensesListScreen({required this.groupId, super.key});
 
   @override
   ConsumerState<ExpensesListScreen> createState() => _ExpensesListScreenState();
@@ -21,26 +22,6 @@ class ExpensesListScreen extends ConsumerStatefulWidget {
 
 class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
   final _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Auto-refresh when expense events occur
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      SocketEventRefresher.listen(
-        ref,
-        [
-          SocketEventType.expenseCreated,
-          SocketEventType.expenseUpdated,
-          SocketEventType.expenseDeleted,
-        ],
-        () {
-          ref.refresh(expensesProvider(widget.groupId));
-        },
-      );
-    });
-  }
 
   @override
   void dispose() {
@@ -58,6 +39,21 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
     final expensesAsync = ref.watch(expensesProvider(widget.groupId));
     final currentUserId = ref.watch(authProvider.select((s) => s.userId));
 
+    // Listen to socket events for auto-refresh (must be in build method)
+    ref.listen<SocketState>(
+      socketProvider,
+      (previous, next) {
+        if (next.lastEvent != null &&
+            [
+              SocketEventType.expenseCreated,
+              SocketEventType.expenseUpdated,
+              SocketEventType.expenseDeleted,
+            ].contains(next.lastEvent!.type)) {
+          ref.refresh(expensesProvider(widget.groupId));
+        }
+      },
+    );
+
     return RefreshIndicator(
       onRefresh: _refresh,
       child: expensesAsync.when(
@@ -72,9 +68,12 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
             itemCount: expenses.length,
             itemBuilder: (context, index) {
               final expense = expenses[index];
+              final canEdit = expense.createdById == currentUserId;
               return _ExpenseCard(
                 expense: expense,
                 currentUserId: currentUserId ?? '',
+                canEdit: canEdit,
+                groupId: widget.groupId,
                 onTap: () {
                   context.push(
                     '/groups/${widget.groupId}/expenses/${expense.id}',
@@ -142,11 +141,15 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
 class _ExpenseCard extends ConsumerWidget {
   final Expense expense;
   final String currentUserId;
+  final String groupId;
+  final bool canEdit;
   final VoidCallback onTap;
 
   const _ExpenseCard({
     required this.expense,
     required this.currentUserId,
+    required this.groupId,
+    required this.canEdit,
     required this.onTap,
   });
 
@@ -161,6 +164,7 @@ class _ExpenseCard extends ConsumerWidget {
           (s) => s.userId == currentUserId,
           orElse: () => const ExpenseSplit(
             id: '',
+            expenseId: '',
             userId: '',
             userName: '',
             amount: 0,
@@ -211,6 +215,20 @@ class _ExpenseCard extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  // Edit button (only for creator)
+                  if (canEdit) ...[
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 20),
+                      onPressed: () {
+                        context.push(
+                          '/groups/$groupId/expenses/${expense.id}/edit',
+                        );
+                      },
+                      tooltip: 'Edit expense',
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 8),

@@ -15,27 +15,6 @@ class GroupsListScreen extends ConsumerStatefulWidget {
 }
 
 class _GroupsListScreenState extends ConsumerState<GroupsListScreen> {
-  @override
-  void initState() {
-    super.initState();
-
-    // Auto-refresh when group-related events occur
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      SocketEventRefresher.listen(
-        ref,
-        [
-          SocketEventType.memberJoined,
-          SocketEventType.memberLeft,
-          SocketEventType.groupUpdated,
-          SocketEventType.inviteAccepted,
-        ],
-        () {
-          ref.refresh(groupsProvider);
-        },
-      );
-    });
-  }
-
   Future<void> _refresh() async {
     ref.refresh(groupsProvider);
   }
@@ -44,6 +23,22 @@ class _GroupsListScreenState extends ConsumerState<GroupsListScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final groupsAsync = ref.watch(groupsProvider);
+
+    // Listen to socket events for auto-refresh (must be in build method)
+    ref.listen<SocketState>(
+      socketProvider,
+      (previous, next) {
+        if (next.lastEvent != null &&
+            [
+              SocketEventType.memberJoined,
+              SocketEventType.memberLeft,
+              SocketEventType.groupUpdated,
+              SocketEventType.inviteAccepted,
+            ].contains(next.lastEvent!.type)) {
+          ref.refresh(groupsProvider);
+        }
+      },
+    );
 
     return Scaffold(
       appBar: AppBar(

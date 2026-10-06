@@ -13,9 +13,18 @@ final expensesProvider =
     final response = await dio.get(
       '${AppConfig.apiBaseUrl}/api/groups/$groupId/expenses',
     );
-    final List<dynamic> data = response.data;
-    return data.map((json) => Expense.fromJson(json)).toList();
+    // Backend returns { expenses: [...], pagination: {...} }
+    final Map<String, dynamic> data = response.data;
+    final List<dynamic> expenses = data['expenses'];
+    
+    // Debug: print first expense to see what fields are null
+    if (expenses.isNotEmpty) {
+      print('DEBUG: First expense JSON: ${expenses[0]}');
+    }
+    
+    return expenses.map((json) => Expense.fromJson(json)).toList();
   } catch (e) {
+    print('DEBUG: Error loading expenses: $e');
     throw Exception('Failed to load expenses: $e');
   }
 });

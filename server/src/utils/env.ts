@@ -30,19 +30,11 @@ const envSchema = z.object({
   ONESIGNAL_APP_ID: z.string().optional(),
   ONESIGNAL_REST_API_KEY: z.string().optional(),
   
-  // Storage (S3-compatible for receipts) - all optional
-  S3_ENDPOINT: z.preprocess(
-    val => val === '' ? undefined : val,
-    z.string().url().optional()
-  ),
-  S3_REGION: z.string().default('auto'),
-  S3_ACCESS_KEY_ID: z.string().optional(),
-  S3_SECRET_ACCESS_KEY: z.string().optional(),
-  S3_BUCKET: z.string().default('splitwise-receipts'),
-  S3_PUBLIC_URL: z.preprocess(
-    val => val === '' ? undefined : val,
-    z.string().url().optional()
-  ),
+  // Cloudinary for receipt uploads - all optional
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  CLOUDINARY_UPLOAD_PRESET: z.string().optional(),
   
   // App URLs
   APP_URL: z.string().url().default('http://localhost:3000'),

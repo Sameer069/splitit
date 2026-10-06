@@ -4,8 +4,8 @@ import { logger } from '../utils/logger';
 export interface MemberBalance {
   userId: string;
   userName: string;
-  userAvatar: string | null;
-  balance: number; // positive = owed to them, negative = they owe
+  avatarUrl: string | null; // Changed from userAvatar
+  amount: number; // Changed from balance - positive = owed to them, negative = they owe
 }
 
 export interface SimplifiedSettlement {
@@ -86,8 +86,8 @@ class BalanceService {
       balances.push({
         userId: member.user.id,
         userName: member.user.name,
-        userAvatar: member.user.avatarUrl,
-        balance: Number(balance.toFixed(2)),
+        avatarUrl: member.user.avatarUrl, // Changed from userAvatar
+        amount: Number(balance.toFixed(2)), // Changed from balance
       });
     }
 
@@ -120,13 +120,13 @@ class BalanceService {
     while (true) {
       // Find largest creditor (person owed the most)
       const creditor = workingBalances
-        .filter(b => b.balance > EPSILON)
-        .sort((a, b) => b.balance - a.balance)[0];
+        .filter(b => b.amount > EPSILON)
+        .sort((a, b) => b.amount - a.amount)[0];
 
       // Find largest debtor (person who owes the most)
       const debtor = workingBalances
-        .filter(b => b.balance < -EPSILON)
-        .sort((a, b) => a.balance - b.balance)[0];
+        .filter(b => b.amount < -EPSILON)
+        .sort((a, b) => a.amount - b.amount)[0];
 
       // If no creditor or debtor, we're done
       if (!creditor || !debtor) {
@@ -135,8 +135,8 @@ class BalanceService {
 
       // Settlement amount is minimum of what's owed and what's due
       const settlementAmount = Math.min(
-        creditor.balance,
-        Math.abs(debtor.balance)
+        creditor.amount,
+        Math.abs(debtor.amount)
       );
 
       // Create settlement record
@@ -149,8 +149,8 @@ class BalanceService {
       });
 
       // Update working balances
-      creditor.balance -= settlementAmount;
-      debtor.balance += settlementAmount;
+      creditor.amount -= settlementAmount;
+      debtor.amount += settlementAmount;
 
       logger.debug(
         {
@@ -185,7 +185,7 @@ class BalanceService {
    * Verify all balances sum to approximately zero (sanity check)
    */
   verifyBalancesSum(balances: MemberBalance[]): boolean {
-    const sum = balances.reduce((acc, b) => acc + b.balance, 0);
+    const sum = balances.reduce((acc, b) => acc + b.amount, 0);
     const TOLERANCE = 0.02; // Allow small rounding errors
     const isValid = Math.abs(sum) < TOLERANCE;
 

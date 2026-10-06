@@ -138,7 +138,7 @@ final ThemeData lightTheme = ThemeData(
   ),
 
   // Card
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: AppColors.lightBackground,
     elevation: 1,
     shape: RoundedRectangleBorder(
@@ -344,7 +344,7 @@ final ThemeData darkTheme = ThemeData(
   ),
 
   // Card
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: AppColors.darkSurface,
     elevation: 2,
     shape: RoundedRectangleBorder(

@@ -49,10 +49,42 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Registration failed';
+        
+        // Extract user-friendly error message
+        if (e.toString().contains('Email already exists') || 
+            e.toString().contains('already registered') ||
+            e.toString().contains('User already exists')) {
+          errorMessage = 'An account with this email already exists';
+        } else if (e.toString().contains('Invalid email')) {
+          errorMessage = 'Please enter a valid email address';
+        } else if (e.toString().contains('Password')) {
+          errorMessage = 'Password does not meet requirements';
+        } else if (e.toString().contains('Network') || 
+                   e.toString().contains('connection')) {
+          errorMessage = 'Network error. Please check your connection';
+        } else if (e.toString().contains('timeout')) {
+          errorMessage = 'Request timed out. Please try again';
+        } else {
+          // Try to extract the actual error message
+          final match = RegExp(r'message[:\s]+(.+?)(?:\n|$)').firstMatch(e.toString());
+          if (match != null) {
+            errorMessage = match.group(1)?.trim() ?? errorMessage;
+          }
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(child: Text(errorMessage)),
+              ],
+            ),
             backgroundColor: AppColors.danger,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -150,7 +182,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           setState(() => _obscurePassword = !_obscurePassword);
                         },
                       ),
-                      helperText: 'At least 8 characters',
+                      helperText: 'Must include uppercase, lowercase, and number',
+                      helperMaxLines: 2,
                     ),
                     validator: Validators.password,
                     enabled: !_isLoading,

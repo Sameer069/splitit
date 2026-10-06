@@ -2,28 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../config/app_config.dart';
+import '../models/expense_models.dart';
 import '../providers/auth_provider.dart';
+import '../providers/expenses_provider.dart';
 import '../providers/groups_provider.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/reset_password_screen.dart';
+import '../screens/expenses/create_edit_expense_screen.dart';
 import '../screens/groups/create_edit_group_screen.dart';
 import '../screens/groups/group_detail_screen.dart';
 import '../screens/groups/groups_list_screen.dart';
 import '../screens/groups/manage_members_screen.dart';
 
+/// Listenable that notifies when auth state changes
+class _AuthStateListenable extends ChangeNotifier {
+  final Ref ref;
+
+  _AuthStateListenable(this.ref) {
+    ref.listen(authProvider, (_, __) => notifyListeners());
+  }
+}
+
 /// App router configuration with go_router
 /// Handles navigation, auth guards, and deep linking
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final authListenable = _AuthStateListenable(ref);
 
   return GoRouter(
     initialLocation: '/splash',
     debugLogDiagnostics: true,
+    refreshListenable: authListenable,
     
     // Redirect logic for auth guard
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
       final isAuthenticated = authState.isAuthenticated;
       final isLoading = authState.isLoading;
       
@@ -43,16 +57,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
+      // Loading complete and authenticated - go to home
+      if (!isLoading && isAuthenticated && (isSplashRoute || isAuthRoute)) {
+        print('[ROUTER] Decision: Redirect to / (home)');
+        return '/';
+      }
+
       // Loading complete but not authenticated - go to login
       if (!isLoading && !isAuthenticated && !isAuthRoute) {
         print('[ROUTER] Decision: Redirect to /auth/login');
         return '/auth/login';
-      }
-
-      // Authenticated and trying to access auth routes - go to home
-      if (!isLoading && isAuthenticated && isAuthRoute) {
-        print('[ROUTER] Decision: Redirect to / (home)');
-        return '/';
       }
 
       // All good - no redirect
@@ -139,6 +153,39 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final groupId = state.pathParameters['groupId']!;
                   return ManageMembersScreen(groupId: groupId);
+                },
+              ),
+              // Create expense
+              GoRoute(
+                path: 'expenses/create',
+                builder: (context, state) {
+                  final groupId = state.pathParameters['groupId']!;
+                  return CreateEditExpenseScreen(groupId: groupId);
+                },
+              ),
+              // Edit expense
+              GoRoute(
+                path: 'expenses/:expenseId/edit',
+                builder: (context, state) {
+                  final groupId = state.pathParameters['groupId']!;
+                  final expenseId = state.pathParameters['expenseId']!;
+                  return FutureBuilder<Expense>(
+                    future: ref.read(
+                      expenseProvider((groupId: groupId, expenseId: expenseId)).future,
+                    ),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return CreateEditExpenseScreen(
+                          groupId: groupId,
+                          expenseId: expenseId,
+                          expense: snapshot.data!,
+                        );
+                      }
+                      return const Scaffold(
+                        body: Center(child: CircularProgressIndicator()),
+                      );
+                    },
+                  );
                 },
               ),
               // Expenses
@@ -250,9 +297,7 @@ class ExpenseDetailScreen extends StatelessWidget {
   final String expenseId;
   
   const ExpenseDetailScreen({
-    super.key,
-    required this.groupId,
-    required this.expenseId,
+    required this.groupId, required this.expenseId, super.key,
   });
 
   @override
@@ -266,7 +311,7 @@ class ExpenseDetailScreen extends StatelessWidget {
 
 class InviteAcceptScreen extends StatelessWidget {
   final String token;
-  const InviteAcceptScreen({super.key, required this.token});
+  const InviteAcceptScreen({required this.token, super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -9,7 +9,7 @@ import '../../widgets/add_member_dialog.dart';
 class ManageMembersScreen extends ConsumerWidget {
   final String groupId;
 
-  const ManageMembersScreen({super.key, required this.groupId});
+  const ManageMembersScreen({required this.groupId, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

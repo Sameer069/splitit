@@ -1,69 +1,177 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'auth_state.freezed.dart';
-part 'auth_state.g.dart';
-
 /// Authentication state model
 /// Tracks user authentication status, tokens, and user info
-@freezed
-class AuthState with _$AuthState {
-  const factory AuthState({
-    // Tokens
+class AuthState {
+  // Tokens
+  final String? accessToken;
+  final String? refreshToken;
+
+  // User info
+  final String? userId;
+  final String? email;
+  final String? name;
+  final String? avatarUrl;
+
+  // Status
+  final bool isAuthenticated;
+  final bool isLoading;
+  final String? error;
+
+  const AuthState({
+    this.accessToken,
+    this.refreshToken,
+    this.userId,
+    this.email,
+    this.name,
+    this.avatarUrl,
+    this.isAuthenticated = false,
+    this.isLoading = false,
+    this.error,
+  });
+
+  AuthState copyWith({
     String? accessToken,
     String? refreshToken,
-    
-    // User info
     String? userId,
     String? email,
     String? name,
     String? avatarUrl,
-    
-    // Status
-    @Default(false) bool isAuthenticated,
-    @Default(false) bool isLoading,
+    bool? isAuthenticated,
+    bool? isLoading,
     String? error,
-  }) = _AuthState;
+  }) {
+    return AuthState(
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
+      userId: userId ?? this.userId,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
 
-  factory AuthState.fromJson(Map<String, dynamic> json) =>
-      _$AuthStateFromJson(json);
+  factory AuthState.fromJson(Map<String, dynamic> json) {
+    return AuthState(
+      accessToken: json['accessToken'] as String?,
+      refreshToken: json['refreshToken'] as String?,
+      userId: json['userId'] as String?,
+      email: json['email'] as String?,
+      name: json['name'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
+      isAuthenticated: json['isAuthenticated'] as bool? ?? false,
+      isLoading: json['isLoading'] as bool? ?? false,
+      error: json['error'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+      'userId': userId,
+      'email': email,
+      'name': name,
+      'avatarUrl': avatarUrl,
+      'isAuthenticated': isAuthenticated,
+      'isLoading': isLoading,
+      'error': error,
+    };
+  }
 }
 
 /// User model (from API)
-@freezed
-class User with _$User {
-  const factory User({
-    required String id,
-    required String email,
-    required String name,
-    String? avatarUrl,
-    required DateTime createdAt,
-  }) = _User;
+class User {
+  final String id;
+  final String email;
+  final String name;
+  final DateTime createdAt;
+  final String? avatarUrl;
 
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+  const User({
+    required this.id,
+    required this.email,
+    required this.name,
+    required this.createdAt,
+    this.avatarUrl,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      name: json['name'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      avatarUrl: json['avatarUrl'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'name': name,
+      'createdAt': createdAt.toIso8601String(),
+      'avatarUrl': avatarUrl,
+    };
+  }
 }
 
 /// Login response from API
-@freezed
-class LoginResponse with _$LoginResponse {
-  const factory LoginResponse({
-    required String accessToken,
-    required String refreshToken,
-    required User user,
-  }) = _LoginResponse;
+class LoginResponse {
+  final String accessToken;
+  final String refreshToken;
+  final User user;
 
-  factory LoginResponse.fromJson(Map<String, dynamic> json) =>
-      _$LoginResponseFromJson(json);
+  const LoginResponse({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.user,
+  });
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    return LoginResponse(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+      'user': user.toJson(),
+    };
+  }
 }
 
 /// Register response from API
-@freezed
-class RegisterResponse with _$RegisterResponse {
-  const factory RegisterResponse({
-    required String accessToken,
-    required String refreshToken,
-    required User user,
-  }) = _RegisterResponse;
+class RegisterResponse {
+  final String accessToken;
+  final String refreshToken;
+  final User user;
 
-  factory RegisterResponse.fromJson(Map<String, dynamic> json) =>
-      _$RegisterResponseFromJson(json);
+  const RegisterResponse({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.user,
+  });
+
+  factory RegisterResponse.fromJson(Map<String, dynamic> json) {
+    return RegisterResponse(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+      'user': user.toJson(),
+    };
+  }
 }

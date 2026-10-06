@@ -46,10 +46,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Login failed';
+        
+        // Extract user-friendly error message
+        if (e.toString().contains('Invalid credentials') || 
+            e.toString().contains('Invalid email or password')) {
+          errorMessage = 'Invalid email or password';
+        } else if (e.toString().contains('User not found')) {
+          errorMessage = 'No account found with this email';
+        } else if (e.toString().contains('Network') || 
+                   e.toString().contains('connection')) {
+          errorMessage = 'Network error. Please check your connection';
+        } else if (e.toString().contains('timeout')) {
+          errorMessage = 'Request timed out. Please try again';
+        } else {
+          // Try to extract the actual error message
+          final match = RegExp(r'message[:\s]+(.+?)(?:\n|$)').firstMatch(e.toString());
+          if (match != null) {
+            errorMessage = match.group(1)?.trim() ?? errorMessage;
+          }
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(child: Text(errorMessage)),
+              ],
+            ),
             backgroundColor: AppColors.danger,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -239,12 +268,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   if (AppConfig.enableGoogleSignIn)
                     OutlinedButton.icon(
                       onPressed: _isLoading ? null : _handleGoogleSignIn,
-                      icon: Image.asset(
-                        'assets/icons/google.png',
-                        height: 24,
-                        width: 24,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata),
-                      ),
+                      icon: const Icon(Icons.g_mobiledata, size: 24),
                       label: const Text('Continue with Google'),
                     ),
                   const SizedBox(height: 24),

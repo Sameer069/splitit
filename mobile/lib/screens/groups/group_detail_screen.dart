@@ -13,7 +13,7 @@ import '../expenses/expenses_list_screen.dart';
 class GroupDetailScreen extends ConsumerStatefulWidget {
   final String groupId;
 
-  const GroupDetailScreen({super.key, required this.groupId});
+  const GroupDetailScreen({required this.groupId, super.key});
 
   @override
   ConsumerState<GroupDetailScreen> createState() => _GroupDetailScreenState();
@@ -31,25 +31,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     // Join Socket.io room for real-time updates
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(socketProvider.notifier).joinGroup(widget.groupId);
-
-      // Auto-refresh when events occur
-      SocketEventRefresher.listen(
-        ref,
-        [
-          SocketEventType.expenseCreated,
-          SocketEventType.expenseUpdated,
-          SocketEventType.expenseDeleted,
-          SocketEventType.settlementCreated,
-          SocketEventType.balancesUpdated,
-          SocketEventType.memberJoined,
-          SocketEventType.memberLeft,
-          SocketEventType.groupUpdated,
-        ],
-        () {
-          ref.refresh(groupProvider(widget.groupId));
-          ref.refresh(groupBalancesProvider(widget.groupId));
-        },
-      );
     });
   }
 
@@ -67,6 +48,27 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     final semanticColors = theme.extension<AppSemanticColors>()!;
     final groupAsync = ref.watch(groupProvider(widget.groupId));
     final currentUserId = ref.watch(authProvider.select((s) => s.userId));
+
+    // Listen to socket events for auto-refresh (must be in build method)
+    ref.listen<SocketState>(
+      socketProvider,
+      (previous, next) {
+        if (next.lastEvent != null &&
+            [
+              SocketEventType.expenseCreated,
+              SocketEventType.expenseUpdated,
+              SocketEventType.expenseDeleted,
+              SocketEventType.settlementCreated,
+              SocketEventType.balancesUpdated,
+              SocketEventType.memberJoined,
+              SocketEventType.memberLeft,
+              SocketEventType.groupUpdated,
+            ].contains(next.lastEvent!.type)) {
+          ref.refresh(groupProvider(widget.groupId));
+          ref.refresh(groupBalancesProvider(widget.groupId));
+        }
+      },
+    );
 
     return Scaffold(
       appBar: AppBar(

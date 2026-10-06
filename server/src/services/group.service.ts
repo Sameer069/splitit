@@ -16,12 +16,10 @@ class GroupService {
 
     logger.info({ groupId: group.id, ownerId }, 'Group created');
 
-    return {
-      id: group.id,
-      name: group.name,
-      createdById: group.createdById,
-      createdAt: group.createdAt,
-    };
+    // Fetch full group details to return consistent structure
+    const groupDetail = await this.getGroupDetail(group.id);
+    
+    return groupDetail;
   }
 
   // Get group detail with members
@@ -35,17 +33,15 @@ class GroupService {
     return {
       id: group.id,
       name: group.name,
-      createdById: group.createdById,
+      ownerId: group.createdById, // Map createdById to ownerId for frontend
       createdAt: group.createdAt,
-      memberCount: group._count.members,
-      expenseCount: group._count.expenses,
       members: group.members.map(m => ({
         id: m.id,
         userId: m.user.id,
-        name: m.user.name,
-        email: m.user.email,
+        groupId: group.id,
+        userName: m.user.name,
+        userEmail: m.user.email,
         avatarUrl: m.user.avatarUrl,
-        role: m.role,
         joinedAt: m.joinedAt,
       })),
     };
@@ -57,17 +53,13 @@ class GroupService {
 
     logger.info({ groupId }, 'Group updated');
 
-    const response = {
-      id: group.id,
-      name: group.name,
-      createdById: group.createdById,
-      createdAt: group.createdAt,
-    };
+    // Fetch full group details to return consistent structure
+    const groupDetail = await this.getGroupDetail(groupId);
 
     // Emit real-time event
-    SocketEvents.groupUpdated(groupId, response);
+    SocketEvents.groupUpdated(groupId, groupDetail);
 
-    return response;
+    return groupDetail;
   }
 
   // Delete group

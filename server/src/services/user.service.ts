@@ -45,11 +45,9 @@ class UserService {
     return memberships.map(membership => ({
       id: membership.group.id,
       name: membership.group.name,
-      role: membership.role,
-      memberCount: membership.group._count.members,
-      expenseCount: membership.group._count.expenses,
-      joinedAt: membership.joinedAt,
+      ownerId: membership.group.createdById, // Map createdById to ownerId
       createdAt: membership.group.createdAt,
+      members: [], // Empty array for list view (full details loaded separately)
     }));
   }
 }

@@ -48,7 +48,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       // Try to fetch current user profile to verify token
       final response = await _dio.get(
-        '${AppConfig.apiBaseUrl}/api/users/me',
+        '${AppConfig.apiBaseUrl}/api/me',
         options: Options(
           headers: {'Authorization': 'Bearer $accessToken'},
         ),
@@ -166,6 +166,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
+      print('[AUTH] Attempting registration for: $email');
+      print('[AUTH] API URL: ${AppConfig.apiBaseUrl}/api/auth/register');
+      
       final response = await _dio.post(
         '${AppConfig.apiBaseUrl}/api/auth/register',
         data: {
@@ -175,12 +178,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
         },
       );
 
+      print('[AUTH] Registration response received: ${response.statusCode}');
+      print('[AUTH] Response data: ${response.data}');
+
       final registerResponse = RegisterResponse.fromJson(response.data);
+      print('[AUTH] Parsed registration response successfully');
 
       // Save tokens
       await _storage.saveAccessToken(registerResponse.accessToken);
       await _storage.saveRefreshToken(registerResponse.refreshToken);
       await _storage.saveUserId(registerResponse.user.id);
+      print('[AUTH] Tokens saved successfully');
 
       state = state.copyWith(
         accessToken: registerResponse.accessToken,
@@ -192,9 +200,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isAuthenticated: true,
         isLoading: false,
       );
+      
+      print('[AUTH] Registration successful!');
     } catch (e) {
+      print('[AUTH] Registration error: $e');
+      
       String errorMessage = 'Registration failed';
       if (e is DioException) {
+        print('[AUTH] Dio error - status: ${e.response?.statusCode}');
+        print('[AUTH] Dio error - data: ${e.response?.data}');
         errorMessage = e.response?.data['message'] ?? errorMessage;
       }
 

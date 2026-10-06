@@ -1,14 +1,33 @@
 /// App-wide configuration constants
 class AppConfig {
-  // API Configuration
+  // ============================================================================
+  // CONFIGURATION: Update these URLs for production deployment
+  // ============================================================================
+  
+  // DEVELOPMENT URLs (localhost)
+  static const String _devApiUrl = 'http://localhost:3000';
+  static const String _devSocketUrl = 'http://localhost:3000';
+  
+  // PRODUCTION URLs - Render backend
+  static const String _prodApiUrl = 'https://splitit-backend-w856.onrender.com';
+  static const String _prodSocketUrl = 'https://splitit-backend-w856.onrender.com';
+  
+  // Environment flag - Set to true for production, false for development
+  // Note: GitHub Actions will override apiBaseUrl/socketUrl with --dart-define
+  static const bool _useProduction = false; // Keep false for local development
+  
+  // ============================================================================
+  // API Configuration (automatically selects dev or prod based on flag above)
+  // ============================================================================
+  
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://splitit-backend-w856.onrender.com',
+    defaultValue: _useProduction ? _prodApiUrl : _devApiUrl,
   );
 
   static const String socketUrl = String.fromEnvironment(
     'SOCKET_URL',
-    defaultValue: 'https://splitit-backend-w856.onrender.com',
+    defaultValue: _useProduction ? _prodSocketUrl : _devSocketUrl,
   );
 
   // OneSignal Configuration

@@ -9,7 +9,7 @@ import '../utils/validators.dart';
 class AddMemberDialog extends ConsumerStatefulWidget {
   final String groupId;
 
-  const AddMemberDialog({super.key, required this.groupId});
+  const AddMemberDialog({required this.groupId, super.key});
 
   @override
   ConsumerState<AddMemberDialog> createState() => _AddMemberDialogState();
@@ -47,10 +47,28 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
       }
     } catch (e) {
       if (mounted) {
+        // Extract error message
+        String errorMessage = e.toString();
+        
+        // Check if it's a "user not found" error
+        if (errorMessage.contains('No user found') || 
+            errorMessage.contains('not found') ||
+            errorMessage.contains('404')) {
+          errorMessage = 
+              'User with email "${_emailController.text.trim()}" is not registered yet.\n\n'
+              'They need to:\n'
+              '1. Download the app\n'
+              '2. Register with this email\n'
+              '3. Then you can add them to the group';
+        } else if (errorMessage.contains('already a member')) {
+          errorMessage = 'This user is already a member of the group';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.danger,
+            duration: const Duration(seconds: 5),
           ),
         );
       }

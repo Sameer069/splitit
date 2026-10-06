@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/socket_state.dart';
 import '../../providers/groups_provider.dart';
 import '../../providers/settlements_provider.dart';
+import '../../providers/socket_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/socket_event_handler.dart';
 
@@ -11,7 +12,7 @@ import '../../utils/socket_event_handler.dart';
 class BalancesScreen extends ConsumerStatefulWidget {
   final String groupId;
 
-  const BalancesScreen({super.key, required this.groupId});
+  const BalancesScreen({required this.groupId, super.key});
 
   @override
   ConsumerState<BalancesScreen> createState() => _BalancesScreenState();
@@ -19,33 +20,28 @@ class BalancesScreen extends ConsumerStatefulWidget {
 
 class _BalancesScreenState extends ConsumerState<BalancesScreen> {
   @override
-  void initState() {
-    super.initState();
-
-    // Auto-refresh when balance events occur
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      SocketEventRefresher.listen(
-        ref,
-        [
-          SocketEventType.balancesUpdated,
-          SocketEventType.settlementCreated,
-          SocketEventType.expenseCreated,
-          SocketEventType.expenseUpdated,
-          SocketEventType.expenseDeleted,
-        ],
-        () {
-          ref.refresh(groupBalancesProvider(widget.groupId));
-          ref.refresh(settlementsProvider(widget.groupId));
-        },
-      );
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final semanticColors = theme.extension<AppSemanticColors>()!;
     final balancesAsync = ref.watch(groupBalancesProvider(widget.groupId));
+
+    // Listen to socket events for auto-refresh (must be in build method)
+    ref.listen<SocketState>(
+      socketProvider,
+      (previous, next) {
+        if (next.lastEvent != null &&
+            [
+              SocketEventType.balancesUpdated,
+              SocketEventType.settlementCreated,
+              SocketEventType.expenseCreated,
+              SocketEventType.expenseUpdated,
+              SocketEventType.expenseDeleted,
+            ].contains(next.lastEvent!.type)) {
+          ref.refresh(groupBalancesProvider(widget.groupId));
+          ref.refresh(settlementsProvider(widget.groupId));
+        }
+      },
+    );
 
     return Scaffold(
       appBar: AppBar(

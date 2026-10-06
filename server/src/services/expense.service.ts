@@ -320,6 +320,7 @@ class ExpenseService {
     createdAt: Date;
     updatedAt: Date;
     paidBy: { id: string; name: string };
+    createdBy: { id: string; name: string };
     category: { id: string; name: string; icon: string } | null;
     splits: Array<{
       id: string;
@@ -340,7 +341,7 @@ class ExpenseService {
       categoryIcon: expense.category?.icon || null,
       receiptUrl: expense.receiptUrl,
       createdById: expense.createdById,
-      createdByName: expense.paidBy.name,
+      createdByName: expense.createdBy.name,
       createdAt: expense.createdAt,
       updatedAt: expense.updatedAt,
       splits: expense.splits.map(s => ({

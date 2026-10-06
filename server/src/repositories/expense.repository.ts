@@ -38,6 +38,9 @@ export class ExpenseRepository {
         paidBy: {
           select: { id: true, name: true },
         },
+        createdBy: {
+          select: { id: true, name: true },
+        },
         category: true,
       },
     });
@@ -50,6 +53,9 @@ export class ExpenseRepository {
       include: {
         paidBy: {
           select: { id: true, name: true, email: true },
+        },
+        createdBy: {
+          select: { id: true, name: true },
         },
         category: true,
         splits: {
@@ -107,6 +113,9 @@ export class ExpenseRepository {
         where,
         include: {
           paidBy: {
+            select: { id: true, name: true },
+          },
+          createdBy: {
             select: { id: true, name: true },
           },
           category: true,
@@ -180,6 +189,9 @@ export class ExpenseRepository {
       include: {
         splits: true,
         paidBy: {
+          select: { id: true, name: true },
+        },
+        createdBy: {
           select: { id: true, name: true },
         },
         category: true,

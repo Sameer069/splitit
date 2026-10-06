@@ -1,18 +1,38 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'socket_state.freezed.dart';
-
 /// Socket connection state
-@freezed
-class SocketState with _$SocketState {
-  const factory SocketState({
-    @Default(false) bool isConnected,
-    @Default(false) bool isConnecting,
-    @Default({}) Set<String> joinedGroups,
+class SocketState {
+  final bool isConnected;
+  final bool isConnecting;
+  final Set<String> joinedGroups;
+  final SocketEvent? lastEvent;
+  final String? error;
+  final int unreadNotifications;
+
+  const SocketState({
+    this.isConnected = false,
+    this.isConnecting = false,
+    this.joinedGroups = const {},
+    this.lastEvent,
+    this.error,
+    this.unreadNotifications = 0,
+  });
+
+  SocketState copyWith({
+    bool? isConnected,
+    bool? isConnecting,
+    Set<String>? joinedGroups,
     SocketEvent? lastEvent,
     String? error,
-    @Default(0) int unreadNotifications,
-  }) = _SocketState;
+    int? unreadNotifications,
+  }) {
+    return SocketState(
+      isConnected: isConnected ?? this.isConnected,
+      isConnecting: isConnecting ?? this.isConnecting,
+      joinedGroups: joinedGroups ?? this.joinedGroups,
+      lastEvent: lastEvent ?? this.lastEvent,
+      error: error ?? this.error,
+      unreadNotifications: unreadNotifications ?? this.unreadNotifications,
+    );
+  }
 }
 
 /// Socket event types
@@ -48,11 +68,14 @@ enum SocketEventType {
 }
 
 /// Socket event data
-@freezed
-class SocketEvent with _$SocketEvent {
-  const factory SocketEvent({
-    required SocketEventType type,
-    required Map<String, dynamic> data,
-    required DateTime timestamp,
-  }) = _SocketEvent;
+class SocketEvent {
+  final SocketEventType type;
+  final Map<String, dynamic> data;
+  final DateTime timestamp;
+
+  const SocketEvent({
+    required this.type,
+    required this.data,
+    required this.timestamp,
+  });
 }

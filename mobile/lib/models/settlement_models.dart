@@ -1,55 +1,118 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'settlement_models.freezed.dart';
-part 'settlement_models.g.dart';
-
 /// Settlement model
-@freezed
-class Settlement with _$Settlement {
-  const factory Settlement({
-    required String id,
-    required String groupId,
-    required String payerId,
-    required String payerName,
-    String? payerAvatarUrl,
-    required String recipientId,
-    required String recipientName,
-    String? recipientAvatarUrl,
-    required double amount,
-    required DateTime createdAt,
-  }) = _Settlement;
+class Settlement {
+  final String id;
+  final String groupId;
+  final String fromUserId;
+  final String fromUserName;
+  final String toUserId;
+  final String toUserName;
+  final double amount;
+  final DateTime createdAt;
+  final String? note;
 
-  factory Settlement.fromJson(Map<String, dynamic> json) =>
-      _$SettlementFromJson(json);
+  const Settlement({
+    required this.id,
+    required this.groupId,
+    required this.fromUserId,
+    required this.fromUserName,
+    required this.toUserId,
+    required this.toUserName,
+    required this.amount,
+    required this.createdAt,
+    this.note,
+  });
+
+  factory Settlement.fromJson(Map<String, dynamic> json) {
+    return Settlement(
+      id: json['id'] as String,
+      groupId: json['groupId'] as String,
+      fromUserId: json['fromUserId'] as String,
+      fromUserName: json['fromUserName'] as String,
+      toUserId: json['toUserId'] as String,
+      toUserName: json['toUserName'] as String,
+      amount: (json['amount'] as num).toDouble(),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      note: json['note'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'groupId': groupId,
+      'fromUserId': fromUserId,
+      'fromUserName': fromUserName,
+      'toUserId': toUserId,
+      'toUserName': toUserName,
+      'amount': amount,
+      'createdAt': createdAt.toIso8601String(),
+      'note': note,
+    };
+  }
 }
 
 /// Settlement suggestion (from backend's greedy algorithm)
-@freezed
-class SettlementSuggestion with _$SettlementSuggestion {
-  const factory SettlementSuggestion({
-    required String fromUserId,
-    required String fromUserName,
-    required String toUserId,
-    required String toUserName,
-    required double amount,
-  }) = _SettlementSuggestion;
+class SettlementSuggestion {
+  final String fromUserId;
+  final String fromUserName;
+  final String toUserId;
+  final String toUserName;
+  final double amount;
 
-  factory SettlementSuggestion.fromJson(Map<String, dynamic> json) =>
-      _$SettlementSuggestionFromJson(json);
+  const SettlementSuggestion({
+    required this.fromUserId,
+    required this.fromUserName,
+    required this.toUserId,
+    required this.toUserName,
+    required this.amount,
+  });
+
+  factory SettlementSuggestion.fromJson(Map<String, dynamic> json) {
+    return SettlementSuggestion(
+      fromUserId: json['fromUserId'] as String,
+      fromUserName: json['fromUserName'] as String,
+      toUserId: json['toUserId'] as String,
+      toUserName: json['toUserName'] as String,
+      amount: (json['amount'] as num).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'fromUserId': fromUserId,
+      'fromUserName': fromUserName,
+      'toUserId': toUserId,
+      'toUserName': toUserName,
+      'amount': amount,
+    };
+  }
 }
 
 /// Create settlement request
-@freezed
-class CreateSettlementRequest with _$CreateSettlementRequest {
-  const factory CreateSettlementRequest({
-    required String payerId,
-    required String recipientId,
-    required double amount,
-  }) = _CreateSettlementRequest;
+class CreateSettlementRequest {
+  final String toUserId;
+  final double amount;
+  final String? note;
 
-  Map<String, dynamic> toJson() => {
-        'payerId': payerId,
-        'recipientId': recipientId,
-        'amount': amount,
-      };
+  const CreateSettlementRequest({
+    required this.toUserId,
+    required this.amount,
+    this.note,
+  });
+
+  factory CreateSettlementRequest.fromJson(Map<String, dynamic> json) {
+    return CreateSettlementRequest(
+      toUserId: json['toUserId'] as String,
+      amount: (json['amount'] as num).toDouble(),
+      note: json['note'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'toUserId': toUserId,
+      'amount': amount,
+      if (note != null) 'note': note,
+    };
+  }
 }

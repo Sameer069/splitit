@@ -19,7 +19,7 @@ class Validators {
     return null;
   }
 
-  /// Password validation
+  /// Password validation - matches backend requirements
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password is required';
@@ -27,6 +27,34 @@ class Validators {
 
     if (value.length < AppConfig.minPasswordLength) {
       return 'Password must be at least ${AppConfig.minPasswordLength} characters';
+    }
+
+    // Check for uppercase letter
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return 'Password must contain at least one uppercase letter';
+    }
+
+    // Check for lowercase letter
+    if (!value.contains(RegExp(r'[a-z]'))) {
+      return 'Password must contain at least one lowercase letter';
+    }
+
+    // Check for number
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'Password must contain at least one number';
+    }
+
+    return null;
+  }
+
+  /// Strong password validation (optional - more strict)
+  static String? strongPassword(String? value) {
+    final basicValidation = password(value);
+    if (basicValidation != null) return basicValidation;
+
+    // Check for special character
+    if (!value!.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      return 'Password must contain at least one special character';
     }
 
     return null;

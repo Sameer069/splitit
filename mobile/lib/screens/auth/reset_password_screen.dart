@@ -12,8 +12,7 @@ class ResetPasswordScreen extends ConsumerStatefulWidget {
   final String token;
 
   const ResetPasswordScreen({
-    super.key,
-    required this.token,
+    required this.token, super.key,
   });
 
   @override

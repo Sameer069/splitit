@@ -23,5 +23,7 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "**/generated/**"
+    - build/**
+    - android/**
   errors:
     invalid_annotation_target: ignore

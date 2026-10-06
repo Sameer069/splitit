@@ -1,100 +1,218 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'group_models.freezed.dart';
-part 'group_models.g.dart';
-
 /// Group model
-@freezed
-class Group with _$Group {
-  const factory Group({
-    required String id,
-    required String name,
-    String? description,
-    required String ownerId,
-    required DateTime createdAt,
-    DateTime? updatedAt,
-    @Default([]) List<GroupMember> members,
-  }) = _Group;
+class Group {
+  final String id;
+  final String name;
+  final String ownerId;
+  final DateTime createdAt;
+  final String? description;
+  final DateTime? updatedAt;
+  final List<GroupMember> members;
 
-  factory Group.fromJson(Map<String, dynamic> json) => _$GroupFromJson(json);
+  const Group({
+    required this.id,
+    required this.name,
+    required this.ownerId,
+    required this.createdAt,
+    this.description,
+    this.updatedAt,
+    this.members = const [],
+  });
+
+  Group copyWith({
+    String? id,
+    String? name,
+    String? ownerId,
+    DateTime? createdAt,
+    String? description,
+    DateTime? updatedAt,
+    List<GroupMember>? members,
+  }) {
+    return Group(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      ownerId: ownerId ?? this.ownerId,
+      createdAt: createdAt ?? this.createdAt,
+      description: description ?? this.description,
+      updatedAt: updatedAt ?? this.updatedAt,
+      members: members ?? this.members,
+    );
+  }
+
+  factory Group.fromJson(Map<String, dynamic> json) {
+    return Group(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      ownerId: json['ownerId'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      description: json['description'] as String?, // Optional - backend doesn't have this yet
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : null, // Optional - backend doesn't have this yet
+      members: (json['members'] as List<dynamic>?)
+              ?.map((e) => GroupMember.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'ownerId': ownerId,
+      'createdAt': createdAt.toIso8601String(),
+      if (description != null) 'description': description,
+      if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
+      'members': members.map((e) => e.toJson()).toList(),
+    };
+  }
 }
 
 /// Group member
-@freezed
-class GroupMember with _$GroupMember {
-  const factory GroupMember({
-    required String id,
-    required String userId,
-    required String groupId,
-    required String userName,
-    String? userEmail,
-    String? avatarUrl,
-    required DateTime joinedAt,
-  }) = _GroupMember;
+class GroupMember {
+  final String id;
+  final String userId;
+  final String groupId;
+  final String userName;
+  final DateTime joinedAt;
+  final String? userEmail;
+  final String? avatarUrl;
 
-  factory GroupMember.fromJson(Map<String, dynamic> json) =>
-      _$GroupMemberFromJson(json);
+  const GroupMember({
+    required this.id,
+    required this.userId,
+    required this.groupId,
+    required this.userName,
+    required this.joinedAt,
+    this.userEmail,
+    this.avatarUrl,
+  });
+
+  factory GroupMember.fromJson(Map<String, dynamic> json) {
+    return GroupMember(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      groupId: json['groupId'] as String,
+      userName: json['userName'] as String,
+      joinedAt: DateTime.parse(json['joinedAt'] as String),
+      userEmail: json['userEmail'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'groupId': groupId,
+      'userName': userName,
+      'joinedAt': joinedAt.toIso8601String(),
+      'userEmail': userEmail,
+      'avatarUrl': avatarUrl,
+    };
+  }
 }
 
 /// Group balance (per member)
-@freezed
-class GroupBalance with _$GroupBalance {
-  const factory GroupBalance({
-    required String userId,
-    required String userName,
-    String? avatarUrl,
-    required double amount, // positive = owed to user, negative = user owes
-  }) = _GroupBalance;
+class GroupBalance {
+  final String userId;
+  final String userName;
+  final double amount; // positive = owed to user, negative = user owes
+  final String? avatarUrl;
 
-  factory GroupBalance.fromJson(Map<String, dynamic> json) =>
-      _$GroupBalanceFromJson(json);
+  const GroupBalance({
+    required this.userId,
+    required this.userName,
+    required this.amount,
+    this.avatarUrl,
+  });
+
+  factory GroupBalance.fromJson(Map<String, dynamic> json) {
+    return GroupBalance(
+      userId: json['userId'] as String,
+      userName: json['userName'] as String,
+      amount: (json['amount'] as num).toDouble(),
+      avatarUrl: json['avatarUrl'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'userName': userName,
+      'amount': amount,
+      'avatarUrl': avatarUrl,
+    };
+  }
 }
 
 /// Create group request
-@freezed
-class CreateGroupRequest with _$CreateGroupRequest {
-  const factory CreateGroupRequest({
-    required String name,
-    String? description,
-  }) = _CreateGroupRequest;
+class CreateGroupRequest {
+  final String name;
+  final String? description;
 
-  factory CreateGroupRequest.fromJson(Map<String, dynamic> json) =>
-      _$CreateGroupRequestFromJson(json);
+  const CreateGroupRequest({
+    required this.name,
+    this.description,
+  });
 
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        if (description != null) 'description': description,
-      };
+  factory CreateGroupRequest.fromJson(Map<String, dynamic> json) {
+    return CreateGroupRequest(
+      name: json['name'] as String,
+      description: json['description'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      if (description != null) 'description': description,
+    };
+  }
 }
 
 /// Update group request
-@freezed
-class UpdateGroupRequest with _$UpdateGroupRequest {
-  const factory UpdateGroupRequest({
-    String? name,
-    String? description,
-  }) = _UpdateGroupRequest;
+class UpdateGroupRequest {
+  final String? name;
+  final String? description;
 
-  factory UpdateGroupRequest.fromJson(Map<String, dynamic> json) =>
-      _$UpdateGroupRequestFromJson(json);
+  const UpdateGroupRequest({
+    this.name,
+    this.description,
+  });
 
-  Map<String, dynamic> toJson() => {
-        if (name != null) 'name': name,
-        if (description != null) 'description': description,
-      };
+  factory UpdateGroupRequest.fromJson(Map<String, dynamic> json) {
+    return UpdateGroupRequest(
+      name: json['name'] as String?,
+      description: json['description'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+    };
+  }
 }
 
 /// Add member request
-@freezed
-class AddMemberRequest with _$AddMemberRequest {
-  const factory AddMemberRequest({
-    required String email,
-  }) = _AddMemberRequest;
+class AddMemberRequest {
+  final String email;
 
-  factory AddMemberRequest.fromJson(Map<String, dynamic> json) =>
-      _$AddMemberRequestFromJson(json);
+  const AddMemberRequest({
+    required this.email,
+  });
 
-  Map<String, dynamic> toJson() => {
-        'email': email,
-      };
+  factory AddMemberRequest.fromJson(Map<String, dynamic> json) {
+    return AddMemberRequest(
+      email: json['email'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+    };
+  }
 }

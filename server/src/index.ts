@@ -27,7 +27,30 @@ initializeSocket(httpServer);
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: [env.WEB_APP_URL, env.APP_URL],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    // In development: Allow localhost on any port
+    if (env.NODE_ENV === 'development' && 
+        (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
+      return callback(null, true);
+    }
+    
+    // Allow configured URLs (both local and production)
+    if (origin === env.WEB_APP_URL || origin === env.APP_URL) {
+      return callback(null, true);
+    }
+    
+    // Production: Allow any HTTPS origin (for deployed Flutter web app)
+    if (env.NODE_ENV === 'production' && origin.startsWith('https://')) {
+      return callback(null, true);
+    }
+    
+    // Log and reject others
+    logger.warn(`CORS blocked origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 

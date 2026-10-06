@@ -9,7 +9,7 @@ final groupsProvider = FutureProvider<List<Group>>((ref) async {
   final dio = ref.watch(dioProvider);
 
   try {
-    final response = await dio.get('${AppConfig.apiBaseUrl}/api/groups');
+    final response = await dio.get('${AppConfig.apiBaseUrl}/api/me/groups');
     final List<dynamic> data = response.data;
     return data.map((json) => Group.fromJson(json)).toList();
   } catch (e) {
@@ -36,8 +36,10 @@ final groupBalancesProvider =
 
   try {
     final response = await dio.get('${AppConfig.apiBaseUrl}/api/groups/$groupId/balances');
-    final List<dynamic> data = response.data;
-    return data.map((json) => GroupBalance.fromJson(json)).toList();
+    // Backend returns { balances: [...], suggestions: [...] }
+    final Map<String, dynamic> data = response.data;
+    final List<dynamic> balances = data['balances'];
+    return balances.map((json) => GroupBalance.fromJson(json)).toList();
   } catch (e) {
     throw Exception('Failed to load balances: $e');
   }
