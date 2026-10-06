@@ -6,6 +6,7 @@ on:
     branches: [ main ]
     paths:
       - 'mobile/**'
+      - '.github/workflows/build-apk.yml'  # Trigger when workflow itself changes
 
 jobs:
   build:
