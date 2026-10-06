@@ -16,7 +16,7 @@
     "generate:dart-client": "npm run generate:openapi && openapi-generator-cli generate -i openapi.json -g dart-dio -o ../mobile/lib/api --additional-properties=pubName=splitwise_api,pubAuthor=SplitIt,pubDescription=\"Generated API client\",nullableFields=true,legacyDiscriminatorBehavior=false",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "cd .. && husky install server/.husky"
+    "postinstall": "npm run db:generate"
   },
   "keywords": [
     "expense",
