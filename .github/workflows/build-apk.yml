@@ -29,9 +29,7 @@ jobs:
     
     - name: Install dependencies
       working-directory: ./mobile
-      run: |
-        flutter pub get
-        dart run build_runner build --delete-conflicting-outputs
+      run: flutter pub get
     
     - name: Build APK
       working-directory: ./mobile
